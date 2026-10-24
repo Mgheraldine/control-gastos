@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuinPay Smart - Control de Deudas y Gastos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-purple-500 selection:text-white">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-md shadow-purple-500/20 text-white text-lg">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-bold text-lg text-white tracking-tight">QuinPay Smart</h1>
+                    <span class="inline-flex items-center gap-1 text-[10px] bg-purple-500/10 text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-500/20">
+                        <i class="fa-solid fa-shield-halved text-purple-400"></i> Almacenamiento Local Seguro
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400">Control Inteligente de Cuotas e Ingresos</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <button onclick="openIncomesModal()" type="button" class="inline-flex items-center gap-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 text-xs font-semibold px-3.5 py-2 rounded-xl border border-amber-500/30 shadow-sm transition">
+                <i class="fa-solid fa-coins text-amber-400"></i> Configurar Ingresos
+            </button>
+            <button onclick="openExpenseModal()" type="button" class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-lg shadow-purple-600/25 transition">
+                <i class="fa-solid fa-plus"></i> Nueva Cuota/Gasto
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+        <!-- INFO BANNER ABOUT RULE -->
+        <div class="bg-gradient-to-r from-purple-950/40 via-slate-900 to-indigo-950/40 border border-purple-500/20 rounded-2xl p-4 lg:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-start gap-3.5">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0 text-purple-400 mt-0.5">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <div class="text-xs lg:text-sm text-slate-300 space-y-1">
+                    <p class="font-semibold text-white">Regla de Asignación Automática</p>
+                    <p>• <span class="text-purple-300 font-medium">Quincena del 15:</span> Financia cuotas que vencen desde el <strong class="text-white">15 al 29</strong> del mes.</p>
+                    <p>• <span class="text-indigo-300 font-medium">Quincena Fin de Mes (30/31):</span> Financia cuotas desde el <strong class="text-white">30/31 de ese mes hasta el 14 del mes próximo</strong>.</p>
+                </div>
+            </div>
+            <button onclick="clearAllData()" type="button" class="text-xs text-red-400 hover:text-red-300 bg-red-950/20 hover:bg-red-950/40 border border-red-500/20 px-3 py-2 rounded-xl transition flex items-center gap-2">
+                <i class="fa-solid fa-trash-can"></i> Restablecer Datos
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+        <!-- INFO BANNER ABOUT RULE -->
+        <div class="bg-gradient-to-r from-purple-950/40 via-slate-900 to-indigo-950/40 border border-purple-500/20 rounded-2xl p-4 lg:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-start gap-3.5">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0 text-purple-400 mt-0.5">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <div class="text-xs lg:text-sm text-slate-300 space-y-1">
+                    <p class="font-semibold text-white">Regla de Asignación Automática</p>
+                    <p>• <span class="text-purple-300 font-medium">Quincena del 15:</span> Financia cuotas que vencen desde el <strong class="text-white">15 al 29</strong> del mes.</p>
+                    <p>• <span class="text-indigo-300 font-medium">Quincena Fin de Mes (30/31):</span> Financia cuotas desde el <strong class="text-white">30/31 de ese mes hasta el 14 del mes próximo</strong>.</p>
+                </div>
+            </div>
+            <div class="text-xs text-slate-400 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800 self-stretch md:self-auto flex items-center justify-between gap-3">
+                <span>¿Quieres abrir esto en tu celular?</span>
+                <button onclick="openCloudCodeModal()" type="button" class="text-purple-400 hover:text-purple-300 font-semibold underline">Ver Código</button>
+            </div>
+        </div>
+
+        <!-- FILTER & PERIOD BAR -->
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ver Período:</span>
+                <div class="flex items-center gap-1 bg-slate-950 rounded-xl border border-slate-800 px-2 py-1">
+                    <button onclick="navigatePeriod(-1)" type="button" title="Quincena Anterior" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <select id="periodSelector" onchange="onPeriodChange(this.value)" class="bg-transparent text-sm font-semibold text-white focus:outline-none px-2 py-1 cursor-pointer">
+                        <!-- Generado dinámicamente -->
+                    </select>
+                    <button onclick="navigatePeriod(1)" type="button" title="Quincena Siguiente" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STATUS LEGEND -->
+            <div class="flex items-center gap-4 text-xs text-slate-400">
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Pagado</div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Con Abono</div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Pendiente</div>
+            </div>
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Ingreso Quincena -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                        <span>INGRESO QUINCENA</span>
+                        <button onclick="openIncomesModal()" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                            <i class="fa-solid fa-pen text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="mt-3 text-2xl font-bold text-white tracking-tight" id="lblIncomeAmount">$0.00</div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400" id="lblIncomeNote">
+                    Base: $0.00
+                </div>
+            </div>
+
+            <!-- Total a Pagar -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                        <span>TOTAL A PAGAR</span>
+                        <i class="fa-solid fa-receipt text-purple-400"></i>
+                    </div>
+                    <div class="mt-3 text-2xl font-bold text-purple-300 tracking-tight" id="lblTotalToPay">$0.00</div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400" id="lblTotalCount">
+                    0 compromiso(s) en rango
+                </div>
+            </div>
+
+            <!-- Abonado / Pagado -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                        <span>ABONADO / PAGADO</span>
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    </div>
+                    <div class="mt-3 text-2xl font-bold text-emerald-400 tracking-tight" id="lblTotalPaid">$0.00</div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400" id="lblPaidPercent">
+                    0% cubierto
+                </div>
+            </div>
+
+            <!-- Restante por Pagar -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                        <span>RESTANTE POR PAGAR</span>
+                        <i class="fa-solid fa-piggy-bank text-amber-400"></i>
+                    </div>
+                    <div class="mt-3 text-2xl font-bold text-amber-400 tracking-tight" id="lblTotalRemaining">$0.00</div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400">
+                    Pendiente de cubrir en esta quincena
+                </div>
+            </div>
+        </div>
+
+        <!-- BUDGET PROGRESS BAR -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm space-y-2">
+            <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-300">Nivel de compromiso del sueldo</span>
+                <span id="lblBudgetPercentage" class="font-bold text-white">0% de tu ingreso</span>
+            </div>
+            <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                <div id="budgetProgressBar" class="bg-gradient-to-r from-emerald-500 via-purple-500 to-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div id="budgetAlertBox" class="hidden mt-2 p-3 rounded-xl bg-red-950/30 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5">
+                <i class="fa-solid fa-triangle-exclamation text-red-400 text-base shrink-0"></i>
+                <span id="budgetAlertText">¡Alerta de Presupuesto Insuficiente! Las cuotas programadas para este período exceden el ingreso registrado para esta quincena.</span>
+            </div>
+        </div>
+
+        <!-- EXPENSES TABLE SECTION -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <div class="p-4 lg:p-5 border-b border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="font-bold text-base text-white flex items-center gap-2">
+                        Compromisos Asignados 
+                        <span id="currentPeriodBadge" class="text-xs font-normal bg-purple-500/10 text-purple-300 border border-purple-500/20 px-2.5 py-0.5 rounded-full">Período: --</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Cuotas de vencimiento asignadas automáticamente a esta quincena de pago</p>
+                </div>
+
+                <!-- FILTER TABS -->
+                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                    <button onclick="setFilterStatus('ALL')" id="filterBtnALL" type="button" class="px-3 py-1.5 rounded-lg font-medium bg-purple-600 text-white transition">Todos</button>
+                    <button onclick="setFilterStatus('PENDING')" id="filterBtnPENDING" type="button" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Pendientes</button>
+                    <button onclick="setFilterStatus('PARTIAL')" id="filterBtnPARTIAL" type="button" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Con Abono</button>
+                    <button onclick="setFilterStatus('PAID')" id="filterBtnPAID" type="button" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Pagados</button>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-950/40">
+                            <th class="py-3 px-4">Estado</th>
+                            <th class="py-3 px-4">Descripción / Deuda</th>
+                            <th class="py-3 px-4">Categoría</th>
+                            <th class="py-3 px-4">F. Vencimiento</th>
+                            <th class="py-3 px-4">Progreso / Pago</th>
+                            <th class="py-3 px-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expensesTableBody" class="divide-y divide-slate-800/60 text-sm">
+                        <!-- Rellenado por JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div id="emptyState" class="hidden py-16 px-4 text-center space-y-3">
+                <div class="w-16 h-16 rounded-2xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center mx-auto text-slate-400 text-2xl">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <h3 class="text-white font-semibold">No hay compromisos en este período</h3>
+                <p class="text-xs text-slate-400 max-w-sm mx-auto">No se encontraron cuotas programadas con fecha de vencimiento dentro del rango de esta quincena.</p>
+                <button onclick="openExpenseModal()" type="button" class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-md shadow-purple-600/20">
+                    <i class="fa-solid fa-plus"></i> Agregar Nueva Cuota
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: NUEVA / EDITAR CUOTA -->
+    <div id="expenseModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 id="modalTitle" class="font-bold text-lg text-white">Nueva Cuota o Gasto</h3>
+                <button onclick="closeExpenseModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="expenseForm" onsubmit="handleExpenseSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editExpenseId">
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Descripción de la Deuda / Gasto *</label>
+                    <input type="text" id="expDescription" required placeholder="Ej: Préstamo Banco, Cashea, Tarjeta de Crédito..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Monto Total ($) *</label>
+                        <input type="number" step="0.01" min="0.01" id="expAmount" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Categoría</label>
+                        <select id="expCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                            <option value="Deudas">Deudas / Préstamos</option>
+                            <option value="Cashea">Cashea / Compras</option>
+                            <option value="Servicios">Servicios / Hogar</option>
+                            <option value="Tarjetas">Tarjetas de Crédito</option>
+                            <option value="Personal">Gastos Personales</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Fecha de Vencimiento *</label>
+                        <input type="date" id="expDueDate" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Tipo de Gasto</label>
+                        <select id="expRecurrence" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                            <option value="one-time">Único (Una sola vez)</option>
+                            <option value="monthly">Fijo Mensual (Se repite cada mes)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300 flex items-start gap-2.5">
+                    <i class="fa-solid fa-lightbulb text-purple-400 mt-0.5"></i>
+                    <span>El sistema calculará automáticamente a qué quincena (del 15 o Fin de Mes) corresponde este pago según su fecha de vencimiento.</span>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="closeExpenseModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/30 transition">Guardar Cuota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CONFIGURAR INGRESOS -->
+    <div id="incomesModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fa-solid fa-coins text-amber-400"></i> Configurar Ingresos por Quincena
+                </h3>
+                <button onclick="closeIncomesModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400">
+                Define cuánto dinero recibes en cada quincena específica. Puedes establecer un sueldo predeterminado o personalizar una quincena en concreto.
+            </p>
+
+            <div class="space-y-4">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-white">Sueldo Base General / Predeterminado</span>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+                        <input type="number" step="0.01" min="0" id="defaultBaseIncome" placeholder="0.00" class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <span class="text-xs font-semibold text-white block">Ingreso Específico para este Período (<span id="currentIncomePeriodLabel">--</span>)</span>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+                        <input type="number" step="0.01" min="0" id="specificPeriodIncome" placeholder="0.00" class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+                    </div>
+                    <p class="text-[11px] text-slate-500">Si dejas este campo en blanco, se usará automáticamente el Sueldo Base General.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button type="button" onclick="closeIncomesModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Cancelar</button>
+                <button onclick="saveIncomesConfig()" type="button" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-600/30 transition">Guardar Ingresos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: REGISTRAR ABONO -->
+    <div id="paymentModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-md text-white">Registrar Abono o Pago</h3>
+                <button onclick="closePaymentModal()" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <input type="hidden" id="paymentExpenseId">
+
+            <div class="space-y-3 text-xs text-slate-300">
+                <p id="paymentExpenseInfo" class="font-semibold text-white bg-slate-950 p-3 rounded-xl border border-slate-800"></p>
+                <div>
+                    <label class="block font-medium text-slate-400 mb-1">Monto a abonar ahora ($):</label>
+                    <input type="number" step="0.01" min="0.01" id="paymentAmountInput" placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+                <button type="button" onclick="closePaymentModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Cancelar</button>
+                <button onclick="submitPayment()" type="button" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-600/30 transition">Registrar Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs">
+        <div id="toastIcon" class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-check text-xs"></i>
+        </div>
+        <span id="toastMessage">Operación realizada con éxito</span>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const STORAGE_KEY_EXPENSES = 'quinpay_expenses_v6';
+        const STORAGE_KEY_INCOMES = 'quinpay_incomes_v6';
+
+        let expenses = [];
+        let incomes = {}; 
+        let currentPeriodKey = '';
+        let currentFilterStatus = 'ALL';
+
+        document.addEventListener("DOMContentLoaded", function() {
+            initAppStorage();
+        });
+
+        function initAppStorage() {
+            populatePeriodSelector();
+            loadLocalData();
+            autoGenerateRecurringExpenses();
+            renderApp();
+        }
+
+        function loadLocalData() {
+            try {
+                const storedExp = localStorage.getItem(STORAGE_KEY_EXPENSES);
+                const storedInc = localStorage.getItem(STORAGE_KEY_INCOMES);
+                if (storedExp) expenses = JSON.parse(storedExp);
+                if (storedInc) incomes = JSON.parse(storedInc);
+            } catch (e) {
+                console.error("Error cargando de localStorage", e);
+                expenses = [];
+                incomes = {};
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY_EXPENSES, JSON.stringify(expenses));
+                localStorage.setItem(STORAGE_KEY_INCOMES, JSON.stringify(incomes));
+            } catch (e) {
+                console.error("Error guardando en localStorage", e);
+            }
+        }
+
+        window.clearAllData = function() {
+            if (confirm('¿Estás seguro de restablecer todos los datos y eliminar los compromisos guardados?')) {
+                localStorage.removeItem(STORAGE_KEY_EXPENSES);
+                localStorage.removeItem(STORAGE_KEY_INCOMES);
+                expenses = [];
+                incomes = {};
+                autoGenerateRecurringExpenses();
+                renderApp();
+                showToast('Datos restablecidos correctamente.');
+            }
+        };
+
+        function getPayPeriodKey(dueDateStr) {
+            if (!dueDateStr) return '';
+            const parts = dueDateStr.split('-');
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const day = parseInt(parts[2], 10);
+
+            if (day >= 15 && day <= 29) {
+                return `${year}-${String(month).padStart(2, '0')}-15`;
+            } else if (day >= 30 || day <= 14) {
+                if (day <= 14) {
+                    let prevMonth = month - 1;
+                    let prevYear = year;
+                    if (prevMonth === 0) {
+                        prevMonth = 12;
+                        prevYear = year - 1;
+                    }
+                    return `${prevYear}-${String(prevMonth).padStart(2, '0')}-30`;
+                } else {
+                    return `${year}-${String(month).padStart(2, '0')}-30`;
+                }
+            } else {
+                return `${year}-${String(month).padStart(2, '0')}-15`;
+            }
+        }
+
+        function autoGenerateRecurringExpenses() {
+            let newlyAdded = false;
+            const recurringTemplates = expenses.filter(e => e.recurrence === 'monthly' && !e.parentRecurringId);
+
+            recurringTemplates.forEach(exp => {
+                if (!exp.dueDate) return;
+                const originalDate = new Date(exp.dueDate + 'T00:00:00');
+                if (isNaN(originalDate.getTime())) return;
+
+                const dayOfMonth = originalDate.getDate();
+                const startYear = originalDate.getFullYear();
+                const startMonth = originalDate.getMonth() + 1;
+
+                // Generar cuotas mensuales para un rango razonable (ej. mes actual y 5 meses adelante / atrás)
+                const today = new Date();
+                const curY = today.getFullYear();
+                const curM = today.getMonth() + 1;
+
+                for (let y = curY - 1; y <= curY + 1; y++) {
+                    for (let m = 1; m <= 12; m++) {
+                        let maxDays = new Date(y, m, 0).getDate();
+                        let targetD = Math.min(dayOfMonth, maxDays);
+                        let dateStr = `${y}-${String(m).padStart(2, '0')}-${String(targetD).padStart(2, '0')}`;
+
+                        // Verificar si ya existe una cuota generada para esta plantilla en este mes/año exacto
+                        const exists = expenses.some(e => e.parentRecurringId === exp.id && e.dueDate === dateStr);
+                        if (!exists && exp.dueDate !== dateStr) {
+                            expenses.push({
+                                id: 'rec_' + exp.id + '_' + dateStr,
+                                parentRecurringId: exp.id,
+                                description: exp.description,
+                                amount: exp.amount,
+                                category: exp.category,
+                                dueDate: dateStr,
+                                recurrence: 'monthly',
+                                paidAmount: 0,
+                                status: 'PENDING'
+                            });
+                            newlyAdded = true;
+                        }
+                    }
+                }
+            });
+
+            if (newlyAdded) {
+                saveData();
+            }
+        }
+
+        function populatePeriodSelector() {
+            const selector = document.getElementById('periodSelector');
+            if (!selector) return;
+
+            const currentVal = selector.value || currentPeriodKey;
+            selector.innerHTML = '';
+
+            const today = new Date();
+            const startYear = today.getFullYear() - 1;
+            const endYear = today.getFullYear() + 2;
+
+            let periods = [];
+            for (let y = startYear; y <= endYear; y++) {
+                for (let m = 1; m <= 12; m++) {
+                    const mStr = String(m).padStart(2, '0');
+                    periods.push(`${y}-${mStr}-15`);
+                    periods.push(`${y}-${mStr}-30`);
+                }
+            }
+
+            periods.sort();
+
+            periods.forEach(pKey => {
+                const opt = document.createElement('option');
+                opt.value = pKey;
+                opt.textContent = formatPeriodLabel(pKey);
+                selector.appendChild(opt);
+            });
+
+            if (!currentPeriodKey) {
+                currentPeriodKey = getPayPeriodKey(new Date().toISOString().split('T')[0]);
+            }
+
+            if (periods.includes(currentVal)) {
+                currentPeriodKey = currentVal;
+            }
+
+            selector.value = currentPeriodKey;
+        }
+
+        function formatPeriodLabel(pKey) {
+            if (!pKey) return '';
+            const parts = pKey.split('-');
+            const y = parts[0];
+            const m = parseInt(parts[1], 10);
+            const type = parts[2];
+
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const monthName = months[m - 1];
+
+            if (type === '15') {
+                return `Quincena 15 de ${monthName} ${y} (Cuotas del 15 al 29)`;
+            } else {
+                let nextMonthM = m + 1;
+                let nextYearY = parseInt(y, 10);
+                if (nextMonthM > 12) {
+                    nextMonthM = 1;
+                    nextYearY += 1;
+                }
+                const nextMonthName = months[nextMonthM - 1];
+                let lastDay = (m === 2) ? (parseInt(y) % 4 === 0 ? 29 : 28) : (['4','6','9','11'].includes(String(m)) ? 30 : 31);
+                return `Fin de Mes (${lastDay} de ${monthName}) → Cubre hasta el 14 de ${nextMonthName}`;
+            }
+        }
+
+        window.onPeriodChange = function(val) {
+            currentPeriodKey = val;
+            renderApp();
+        };
+
+        window.navigatePeriod = function(direction) {
+            const selector = document.getElementById('periodSelector');
+            if (!selector) return;
+            const idx = selector.selectedIndex;
+            const newIdx = idx + direction;
+            if (newIdx >= 0 && newIdx < selector.options.length) {
+                selector.selectedIndex = newIdx;
+                currentPeriodKey = selector.value;
+                renderApp();
+            }
+        };
+
+        window.setFilterStatus = function(status) {
+            currentFilterStatus = status;
+            ['ALL', 'PENDING', 'PARTIAL', 'PAID'].forEach(st => {
+                const btn = document.getElementById('filterBtn' + st);
+                if (!btn) return;
+                if (st === status) {
+                    btn.className = "px-3 py-1.5 rounded-lg font-medium bg-purple-600 text-white transition";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition";
+                }
+            });
+            renderExpensesTable();
+        };
+
+        function renderApp() {
+            populatePeriodSelector();
+            const badge = document.getElementById('currentPeriodBadge');
+            if (badge) badge.textContent = `Período: ${currentPeriodKey}`;
+
+            const incLabel = document.getElementById('currentIncomePeriodLabel');
+            if (incLabel) incLabel.textContent = formatPeriodLabel(currentPeriodKey).split('(')[0];
+
+            renderSummary();
+            renderExpensesTable();
+        }
+
+        function getIncomeForPeriod(pKey) {
+            if (incomes.specific && incomes.specific[pKey] !== undefined && incomes.specific[pKey] !== '') {
+                return parseFloat(incomes.specific[pKey]) || 0;
+            }
+            return parseFloat(incomes.defaultBase) || 0;
+        }
+
+        function renderSummary() {
+            const baseIncome = parseFloat(incomes.defaultBase) || 0;
+            const periodIncome = getIncomeForPeriod(currentPeriodKey);
+
+            const lblInc = document.getElementById('lblIncomeAmount');
+            const lblIncNote = document.getElementById('lblIncomeNote');
+            if (lblInc) lblInc.textContent = `$${periodIncome.toFixed(2)}`;
+            if (lblIncNote) lblIncNote.textContent = `Base general: $${baseIncome.toFixed(2)} ${incomes.specific && incomes.specific[currentPeriodKey] ? '(Personalizado)' : ''}`;
+
+            const periodExpenses = expenses.filter(e => getPayPeriodKey(e.dueDate) === currentPeriodKey);
+
+            let totalToPay = 0;
+            let totalPaid = 0;
+
+            periodExpenses.forEach(e => {
+                const amt = parseFloat(e.amount) || 0;
+                const paid = parseFloat(e.paidAmount) || 0;
+                totalToPay += amt;
+                totalPaid += paid;
+            });
+
+            const remaining = Math.max(0, totalToPay - totalPaid);
+
+            const lblTot = document.getElementById('lblTotalToPay');
+            const lblCount = document.getElementById('lblTotalCount');
+            const lblPaid = document.getElementById('lblTotalPaid');
+            const lblRem = document.getElementById('lblTotalRemaining');
+
+            if (lblTot) lblTot.textContent = `$${totalToPay.toFixed(2)}`;
+            if (lblCount) lblCount.textContent = `${periodExpenses.length} compromiso(s) en rango`;
+            if (lblPaid) lblPaid.textContent = `$${totalPaid.toFixed(2)}`;
+            if (lblRem) lblRem.textContent = `$${remaining.toFixed(2)}`;
+
+            const percentCovered = periodIncome > 0 ? Math.min(100, (totalToPay / periodIncome) * 100) : (totalToPay > 0 ? 100 : 0);
+            const bar = document.getElementById('budgetProgressBar');
+            const lblPct = document.getElementById('lblBudgetPercentage');
+            const alertBox = document.getElementById('budgetAlertBox');
+
+            if (bar) bar.style.width = `${percentCovered}%`;
+            if (lblPct) lblPct.textContent = `${percentCovered.toFixed(0)}% de tu ingreso`;
+
+            if (alertBox) {
+                if (periodIncome > 0 && totalToPay > periodIncome) {
+                    alertBox.classList.remove('hidden');
+                } else {
+                    alertBox.classList.add('hidden');
+                }
+            }
+
+            const pctPaidText = totalToPay > 0 ? ((totalPaid / totalToPay) * 100).toFixed(0) : 0;
+            const lblPaidPct = document.getElementById('lblPaidPercent');
+            if (lblPaidPct) lblPaidPct.textContent = `${pctPaidText}% cubierto del total`;
+        }
+
+        function renderExpensesTable() {
+            const tbody = document.getElementById('expensesTableBody');
+            const emptyState = document.getElementById('emptyState');
+            if (!tbody) return;
+
+            const periodExpenses = expenses.filter(e => getPayPeriodKey(e.dueDate) === currentPeriodKey);
+
+            const filtered = periodExpenses.filter(e => {
+                const amt = parseFloat(e.amount) || 0;
+                const paid = parseFloat(e.paidAmount) || 0;
+                let status = 'PENDING';
+                if (paid >= amt && amt > 0) status = 'PAID';
+                else if (paid > 0) status = 'PARTIAL';
+
+                if (currentFilterStatus === 'ALL') return true;
+                if (currentFilterStatus === 'PENDING' && status === 'PENDING') return true;
+                if (currentFilterStatus === 'PARTIAL' && status === 'PARTIAL') return true;
+                if (currentFilterStatus === 'PAID' && status === 'PAID') return true;
+                return false;
+            });
+
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            filtered.forEach(exp => {
+                const amt = parseFloat(exp.amount) || 0;
+                const paid = parseFloat(exp.paidAmount) || 0;
+                let statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30"><i class="fa-solid fa-clock"></i> PENDIENTE</span>`;
+
+                if (paid >= amt && amt > 0) {
+                    statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-check"></i> PAGADO</span>`;
+                } else if (paid > 0) {
+                    statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30"><i class="fa-solid fa-spinner"></i> CON ABONO</span>`;
+                }
+
+                const progressPct = amt > 0 ? Math.min(100, (paid / amt) * 100) : 0;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/50 transition";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 whitespace-nowrap">${statusBadge}</td>
+                    <td class="py-3.5 px-4 font-semibold text-white">
+                        ${escapeHtml(exp.description)}
+                        ${exp.recurrence === 'monthly' ? '<span class="ml-1.5 px-2 py-0.5 bg-purple-500/10 text-purple-300 text-[10px] rounded border border-purple-500/20"><i class="fa-solid fa-rotate"></i> Fijo</span>' : ''}
+                    </td>
+                    <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-lg text-xs bg-slate-800 text-slate-300">${escapeHtml(exp.category || 'Otros')}</span></td>
+                    <td class="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap"><i class="fa-regular fa-calendar text-slate-400 mr-1.5"></i> ${formatDateReadable(exp.dueDate)}</td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                        <div class="text-xs space-y-1">
+                            <div class="flex justify-between font-medium">
+                                <span class="text-emerald-400">$${paid.toFixed(2)}</span>
+                                <span class="text-slate-400">/ $${amt.toFixed(2)}</span>
+                            </div>
+                            <div class="w-28 bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                                <div class="bg-emerald-500 h-full rounded-full" style="width: ${progressPct}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="openPaymentModal('${exp.id}')" type="button" title="Abonar / Pagar" class="px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition">
+                                <i class="fa-solid fa-plus"></i> Abonar
+                            </button>
+                            <button onclick="editExpense('${exp.id}')" type="button" title="Editar" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="deleteExpense('${exp.id}')" type="button" title="Eliminar" class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transition">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.openExpenseModal = function(id = null) {
+            const modal = document.getElementById('expenseModal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('expenseForm');
+            if (!modal || !form) return;
+
+            form.reset();
+            document.getElementById('editExpenseId').value = '';
+
+            if (id) {
+                const exp = expenses.find(e => e.id === id);
+                if (exp) {
+                    title.textContent = 'Editar Cuota o Gasto';
+                    document.getElementById('editExpenseId').value = exp.id;
+                    document.getElementById('expDescription').value = exp.description || '';
+                    document.getElementById('expAmount').value = exp.amount || '';
+                    document.getElementById('expCategory').value = exp.category || 'Deudas';
+                    document.getElementById('expDueDate').value = exp.dueDate || '';
+                    document.getElementById('expRecurrence').value = exp.recurrence || 'one-time';
+                }
+            } else {
+                title.textContent = 'Nueva Cuota o Gasto';
+                document.getElementById('expDueDate').value = new Date().toISOString().split('T')[0];
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closeExpenseModal = function() {
+            document.getElementById('expenseModal').classList.add('hidden');
+        };
+
+        window.handleExpenseSubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editExpenseId').value;
+            const description = document.getElementById('expDescription').value.trim();
+            const amount = parseFloat(document.getElementById('expAmount').value);
+            const category = document.getElementById('expCategory').value;
+            const dueDate = document.getElementById('expDueDate').value;
+            const recurrence = document.getElementById('expRecurrence').value;
+
+            if (!description || isNaN(amount) || !dueDate) {
+                showToast('Por favor completa todos los campos obligatorios.', 'error');
+                return;
+            }
+
+            if (id) {
+                const idx = expenses.findIndex(ex => ex.id === id);
+                if (idx !== -1) {
+                    expenses[idx].description = description;
+                    expenses[idx].amount = amount;
+                    expenses[idx].category = category;
+                    expenses[idx].dueDate = dueDate;
+                    expenses[idx].recurrence = recurrence;
+                }
+                showToast('Cuota actualizada correctamente.');
+            } else {
+                const newExp = {
+                    id: 'exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    description,
+                    amount,
+                    category,
+                    dueDate,
+                    recurrence,
+                    paidAmount: 0,
+                    status: 'PENDING'
+                };
+                expenses.push(newExp);
+                showToast('Cuota creada con éxito.');
+            }
+
+            autoGenerateRecurringExpenses();
+            saveData();
+            renderApp();
+            closeExpenseModal();
+        };
+
+        window.editExpense = function(id) {
+            openExpenseModal(id);
+        };
+
+        window.deleteExpense = function(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este compromiso?')) {
+                // Eliminar tanto si es el ítem directo como si es su plantilla padre o hijo generado
+                expenses = expenses.filter(e => e.id !== id && e.parentRecurringId !== id);
+                saveData();
+                renderApp();
+                showToast('Compromiso eliminado.');
+            }
+        };
+
+        window.openPaymentModal = function(id) {
+            const exp = expenses.find(e => e.id === id);
+            if (!exp) return;
+
+            const modal = document.getElementById('paymentModal');
+            document.getElementById('paymentExpenseId').value = exp.id;
+            const amt = parseFloat(exp.amount) || 0;
+            const paid = parseFloat(exp.paidAmount) || 0;
+            const rem = Math.max(0, amt - paid);
+
+            document.getElementById('paymentExpenseInfo').innerHTML = `<strong>${escapeHtml(exp.description)}</strong><br>Total: $${amt.toFixed(2)} | Restante: $${rem.toFixed(2)}`;
+            document.getElementById('paymentAmountInput').value = rem > 0 ? rem.toFixed(2) : '0.00';
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closePaymentModal = function() {
+            document.getElementById('paymentModal').classList.add('hidden');
+        };
+
+        window.submitPayment = function() {
+            const id = document.getElementById('paymentExpenseId').value;
+            const addAmt = parseFloat(document.getElementById('paymentAmountInput').value);
+
+            if (isNaN(addAmt) || addAmt <= 0) {
+                showToast('Ingresa un monto válido para abonar.', 'error');
+                return;
+            }
+
+            const exp = expenses.find(e => e.id === id);
+            if (exp) {
+                exp.paidAmount = (parseFloat(exp.paidAmount) || 0) + addAmt;
+                const totalAmt = parseFloat(exp.amount) || 0;
+                if (exp.paidAmount >= totalAmt) {
+                    exp.status = 'PAID';
+                } else {
+                    exp.status = 'PARTIAL';
+                }
+
+                saveData();
+                renderApp();
+                closePaymentModal();
+                showToast('¡Pago o abono registrado con éxito!');
+            }
+        };
+
+        window.openIncomesModal = function() {
+            const modal = document.getElementById('incomesModal');
+            if (!modal) return;
+
+            document.getElementById('defaultBaseIncome').value = incomes.defaultBase !== undefined ? incomes.defaultBase : '';
+            if (incomes.specific && incomes.specific[currentPeriodKey] !== undefined) {
+                document.getElementById('specificPeriodIncome').value = incomes.specific[currentPeriodKey];
+            } else {
+                document.getElementById('specificPeriodIncome').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closeIncomesModal = function() {
+            document.getElementById('incomesModal').classList.add('hidden');
+        };
+
+        window.saveIncomesConfig = function() {
+            const defaultBase = parseFloat(document.getElementById('defaultBaseIncome').value) || 0;
+            const specificVal = document.getElementById('specificPeriodIncome').value.trim();
+
+            incomes.defaultBase = defaultBase;
+            if (!incomes.specific) incomes.specific = {};
+
+            if (specificVal === '') {
+                delete incomes.specific[currentPeriodKey];
+            } else {
+                incomes.specific[currentPeriodKey] = parseFloat(specificVal) || 0;
+            }
+
+            saveData();
+            renderApp();
+            closeIncomesModal();
+            showToast('¡Configuración de ingresos guardada!');
+        };
+
+        function formatDateReadable(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            if (!toast || !toastMsg) return;
+
+            toastMsg.textContent = msg;
+            if (type === 'error') {
+                toastIcon.className = "w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center shrink-0";
+                toastIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-xs"></i>`;
+            } else {
+                toastIcon.className = "w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0";
+                toastIcon.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
